@@ -12,10 +12,12 @@ namespace Resources
 		const float gravity = 1000.0f;
 		[Export] public int speed = 20;
 		public Vector2 velocity = new Vector2();
+		public bool onfloor = false;
+		public bool is_walk = false;
 		public override void _Ready()
 		{
 		}
-		public bool GetInput(float delta)
+		private bool GetInput(float delta)
 		{
 			//velocity = new Vector2();
 			velocity.y += delta * gravity;
@@ -41,6 +43,38 @@ namespace Resources
 
 			//velocity = velocity.Normalized() * speed;
 		}
+		public void ControlOut(Controller input)
+		{
+			if (onfloor)
+			{
+				switch (input)
+				{
+					case Controller.Right:
+						{
+							velocity.x += 5 * speed;
+							is_walk = true;
+							break;
+						}
+					case Controller.Left:
+						{
+							velocity.x -= 5 * speed;
+							is_walk = true;
+							break;
+						}
+					case Controller.Up:
+						{
+							velocity.y = -20 * speed;
+							break;
+						}
+					case Controller.Empty:
+						{
+							break;
+						}
+
+				}
+			}
+
+		}
 		public override void _PhysicsProcess(float delta)
 		{
 			var collisionInfo = MoveAndCollide(velocity * delta);
@@ -51,8 +85,9 @@ namespace Resources
 				velocity.x = -velocity.x / 2;
 				//velocity = velocity.Bounce(collisionInfo.Normal) / 2;
 			}
-			bool is_walk = GetInput(delta: delta);
-			if (IsOnFloor() && !is_walk)
+			is_walk = GetInput(delta: delta);
+			onfloor = IsOnFloor();
+			if (onfloor && !is_walk)
 			{
 				velocity.x = velocity.x * 9 / 10;
 			}
